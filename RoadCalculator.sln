@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoadCalculator", "RoadCalculator\RoadCalculator.csproj", "{8861A859-B69C-4924-9A66-6FD3D226029D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8861A859-B69C-4924-9A66-6FD3D226029D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8861A859-B69C-4924-9A66-6FD3D226029D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8861A859-B69C-4924-9A66-6FD3D226029D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8861A859-B69C-4924-9A66-6FD3D226029D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {881B0FF3-AA88-4921-B915-B8BA23C2E58E}
+	EndGlobalSection
+EndGlobal

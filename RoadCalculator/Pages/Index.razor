@@ -1,0 +1,183 @@
+﻿@page "/"
+@using RoadCalculator.Models;
+@using static RoadCalculator.Models.Reuslt;
+
+<PageTitle>Instalación cable de fibra óptica.</PageTitle>
+
+<MudText Typo="Typo.h4">Calculadora de distancia mínima.</MudText>
+
+<MudForm @ref="_form" Class="my-4">
+  <MudText>Costo en km/h de la maquinaria</MudText>
+  <MudNumericField @bind-Value="_model.PrecioAlquilerMaquina" Label="Ingrese el costo"
+                   For="@(() => _model.PrecioAlquilerMaquina)"
+                   Required="true" />
+  <MudButton Variant="Variant.Filled" Color="Color.Primary"
+             OnClick="CalcularDistancias" Class="my-3">Calcular</MudButton>
+</MudForm>
+
+<MudDataGrid T="Result" Items="@_results" Virtualize="true" SortMode="SortMode.Single"
+             QuickFilter="@_quickFilter" Filterable="true">
+  <ToolBarContent>
+    <MudText Typo="Typo.h6">Tabla de Distancias y Costo para el Cableado</MudText>
+    <MudSpacer />
+    <MudTextField @bind-Value="_searchString" Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true"
+                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+  </ToolBarContent>
+  <Columns>
+    <PropertyColumn Property="x => x.Origin" Title="Ciudad Origen" />
+    <PropertyColumn Property="x => x.Destination" Title="Ciudad Destino" />
+    <PropertyColumn Property="x => x.Distance" Title="Distancia en Km" />
+    <PropertyColumn Property="x => x.InstallationTime" Title="Tiempo Mínimo (Horas)"
+                    Format="N2" />
+    <PropertyColumn Property="x => x.Cost" Title="Costo de Instalación"
+                    Format="C" />
+  </Columns>
+  <PagerContent>
+    <MudDataGridPager T="Result" />
+  </PagerContent>
+</MudDataGrid>
+
+@code {
+  private MudForm _form = null!;
+  private string _searchString = string.Empty;
+  private List<Result> _results = new List<Result>();
+  private CalcularDistanciasModel _model = new CalcularDistanciasModel();
+
+  // quick filter - filter gobally across multiple columns with the same input
+  private Func<Result, bool> _quickFilter => x =>
+  {
+    if (string.IsNullOrWhiteSpace(_searchString))
+      return true;
+
+    if (x.Origin.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+      return true;
+
+    if (x.Destination.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+      return true;
+
+    return false;
+  };
+
+  private async Task CalcularDistancias()
+  {
+    await _form.Validate();
+
+    if (!_form.IsValid)
+    {
+      return;
+    }
+    _results.Clear();
+    // Mapa de nombres de ciudades a índices en las matrices
+    var mapaCiudades = new Dictionary<string, int>
+        {
+            {"Tulcán", 0}, {"Ibarra", 1}, {"Quito", 2}, {"Latacunga", 3},
+            {"Ambato", 4}, {"Guaranda", 5}, {"Riobamba", 6}, {"Azogues", 7},
+            {"Cuenca", 8}, {"Esmeraldas", 9}, {"Portoviejo", 10}, {"Manta", 11},
+            {"S. Domingo", 12}, {"Guayaquil", 13}, {"Salinas", 14}, {"Machala", 15}
+        };
+
+    // Matriz de distancias
+    double[,] distancias = new double[16, 16]
+    {
+            {0, 126.3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {126.3, 0, 113.3, 0, 0, 0, 0, 0, 0, 296, 0, 0, 0, 0, 0, 0},
+            {0, 113.3, 0, 108.1, 0, 0, 0, 0, 0, 255, 0, 0, 152.9, 0, 0, 0},
+            {0, 0, 108.1, 0, 42.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 42.5, 0, 99.9, 62.2, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 99.9, 0, 59.9, 0, 0, 0, 0, 0, 172.8, 0, 0, 0},
+            {0, 0, 0, 0, 62.2, 59.9, 0, 242.1, 0, 0, 0, 0, 0, 285, 0, 0},
+            {0, 0, 0, 0, 0, 0, 242.1, 0, 31.6, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 31.6, 0, 0, 0, 0, 0, 196, 0, 230.9},
+            {0, 296, 255, 0, 0, 0, 0, 0, 0, 0, 0, 357.7, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 375.7, 38, 0, 244.3, 198.1, 324.5, 0},
+            {0, 0, 152.9, 0, 0, 0, 0, 0, 0, 0, 0, 244.3, 0, 282.3, 0, 0},
+            {0, 0, 0, 0, 0, 172.8, 285, 0, 196, 0, 0, 198.7, 282.3, 0, 129.4, 181.8},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 324.5, 0, 129.4, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 230.9, 0, 0, 0, 0, 181.8, 0, 0}
+    };
+
+    // Matriz de dificultad
+    int[,] dificultad = new int[16, 16]
+    {
+            {0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {2, 0, 3, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
+            {0, 3, 0, 3, 0, 0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0},
+            {0, 0, 3, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 3, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 1, 0, 0, 0},
+            {0, 0, 0, 0, 3, 2, 0, 2, 0, 0, 0, 0, 1, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 0, 1},
+            {0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 3, 2, 3, 0},
+            {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 2, 0, 0},
+            {0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 2, 2, 0, 1, 1},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0}
+    };
+
+    // El costo de alquiler de la maquinaria por hora
+    double X = _model.PrecioAlquilerMaquina;  // Coloca el valor real aquí
+
+    // Calcular el tiempo mínimo de instalación y el costo para cada par de ciudades
+    double[,] tiempoDeInstalacion = new double[16, 16];
+    double[,] costo = new double[16, 16];
+
+    for (int i = 0; i < 16; i++)
+    {
+      for (int j = 0; j < 16; j++)
+      {
+        if (i != j && distancias[i, j] != 0)
+        {
+          // Aquí calculamos el tiempo de instalación basado en la dificultad
+          double velocidad = 0;
+          switch (dificultad[i, j])
+          {
+            case 1:
+              velocidad = 2;
+              break;
+            case 2:
+              velocidad = 4;
+              break;
+            case 3:
+              velocidad = 6;
+              break;
+          }
+          tiempoDeInstalacion[i, j] = distancias[i, j] / velocidad;
+          costo[i, j] = X * tiempoDeInstalacion[i, j];
+        }
+      }
+    }
+
+    // Imprimir el tiempo de instalación y el costo para cada par de ciudades
+    foreach (var pair in mapaCiudades)
+    {
+      string ciudad1 = pair.Key;
+      int index1 = pair.Value;
+
+      foreach (var pair2 in mapaCiudades)
+      {
+        string ciudad2 = pair2.Key;
+        int index2 = pair2.Value;
+
+        if (ciudad1 != ciudad2 && distancias[index1, index2] != 0)
+        {
+          //Console.WriteLine("Instalación de {0} a {1} tomará {2} horas y costará {3} dólares.",
+          //    ciudad1, ciudad2, tiempoDeInstalacion[index1, index2], costo[index1, index2]);
+          if (_results.Any(x => x.Distance == distancias[index1, index2]))
+            continue;
+          _results.Add(new Result
+            {
+              Origin = ciudad1,
+              Destination = ciudad2,
+              InstallationTime = tiempoDeInstalacion[index1, index2],
+              Cost = costo[index1, index2],
+              Distance = distancias[index1, index2],
+            });
+        }
+      }
+    }
+  }
+}
